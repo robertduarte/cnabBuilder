@@ -8,6 +8,7 @@ import chalk from 'chalk'
 
 const optionsYargs = yargs(process.argv.slice(2))
   .usage('Uso: $0 [options]')
+  .option("i", { alias: "file", describe: "arquivo de entrada cnab", type: "string", demandOption: false })
   .option("f", { alias: "from", describe: "posição inicial de pesquisa da linha do Cnab", type: "number", demandOption: true })
   .option("t", { alias: "to", describe: "posição final de pesquisa da linha do Cnab", type: "number", demandOption: true })
   .option("s", { alias: "segmento", describe: "tipo de segmento", type: "string", demandOption: true })
@@ -16,9 +17,12 @@ const optionsYargs = yargs(process.argv.slice(2))
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const file = path.resolve(`${__dirname}/cnabExample.rem`)
 
-const { from, to, segmento } = optionsYargs
+const defaultFile = 'cnabExample.rem';
+
+const { from, to, segmento, file: filePath = defaultFile } = optionsYargs
+
+const file = path.resolve(`${__dirname}/${filePath}`)
 
 const sliceArrayPosition = (arr, ...positions) => [...arr].slice(...positions)
 
@@ -40,6 +44,10 @@ item dentro da linha P:
 const log = console.log
 
 console.time('leitura Async')
+
+if (filePath === defaultFile) {
+  log(chalk.yellow('Arquivo de entrada não informado, utilizando arquivo padrão "cnabExample.rem"'));
+}
 
 readFile(file, 'utf8')
   .then(file => {
@@ -65,9 +73,8 @@ readFile(file, 'utf8')
       log(messageLog(cnabBodySegmentoR, 'R', from, to))
       return
     }
-
   })
   .catch(error => {
-    console.log("🚀 ~ file: cnabRows.js ~ line 76 ~ error", error)
+    console.trace(`🚀 ~ file: cnabRows.js ~ error:`, error)
   })
 console.timeEnd('leitura Async')
